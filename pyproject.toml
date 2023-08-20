@@ -1,0 +1,6 @@
+[project]
+name = "snakemake_shellify"
+version = "0.1.0"
+description = "je sais pas quoi mettre ici"
+authors = [{ name = "F. Chen" }]
+requires-python = ">=3.10"
