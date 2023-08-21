@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install .
-          conda install snakemake=${{ matrix.snakemake_version }}
+          conda install -c conda-forge -c bioconda snakemake=${{ matrix.snakemake_version }}
       # - name: Lint with flake8
       #   run: |
       #     conda install flake8
