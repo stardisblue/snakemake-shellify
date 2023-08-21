@@ -1,7 +1,7 @@
 from collections import UserString
 from functools import wraps
 import inspect
-from typing import Any, Callable, LiteralString
+from typing import Any, Callable
 
 
 class ShellString(UserString):
@@ -13,7 +13,7 @@ class ShellString(UserString):
         return f"<wrappy: {self.fn.__name__}{inspect.signature(self.fn)}>"
 
 
-def formatter_decorator(*args, **kwargs) -> LiteralString:
+def formatter_decorator(*args, **kwargs):
     self, wrappy = args
 
     if not isinstance(wrappy, ShellString) or wrappy.fn is None:

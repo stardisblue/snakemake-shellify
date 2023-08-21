@@ -1,13 +1,15 @@
-from typing import Callable, Optional
+from typing import Callable, Optional, Union
 
 
 def mappy(
     value: str,
-    matcher: str
-    | dict
-    | tuple
-    | list
-    | Callable[[str, Optional[str]], Optional[str | bool]],
+    matcher: Union[
+        str,
+        dict,
+        tuple,
+        list,
+        Callable[[str, Optional[str]], Optional[Union[str, bool]]],
+    ],
     default: Optional[str] = None,
 ):
     """Will try to match value with the matcher.
