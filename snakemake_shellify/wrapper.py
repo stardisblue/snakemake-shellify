@@ -1,47 +1,54 @@
 from collections import UserString
 from functools import wraps
 import inspect
+from types import MethodType
 from typing import Any, Callable
 
 
 class ShellString(UserString):
-    def __init__(self, seq: object, fn: Callable) -> None:
-        super().__init__(seq)
-        self.fn = fn
+    def __init__(self, fn: Callable) -> None:
+        super().__init__({})
+        self.callable = fn
 
     def __str__(self):
-        return f"<wrappy: {self.fn.__name__}{inspect.signature(self.fn)}>"
+        return (
+            f"ShellString({self.callable.__name__}{inspect.signature(self.callable)})"
+        )
 
 
-def formatter_decorator(*args, **kwargs):
-    self, wrappy = args
+class ShellStringFormatter:
+    def __init__(self, format: Callable) -> None:
+        self._format = format
 
-    if not isinstance(wrappy, ShellString) or wrappy.fn is None:
-        # passthrough
-        return formatter_decorator.__format(*args, **kwargs)
+    def __call__(self, instance, shell_str, /, *args, **kwargs: Any) -> Any:
+        if not isinstance(shell_str, ShellString):
+            # passthrough
+            return self._format(instance, shell_str, *args, **kwargs)
 
-    fn = wrappy.fn
-    argspec = inspect.getfullargspec(fn)
-    filtered_args: Any = kwargs
-    if not argspec.varkw:
-        filtered_args = {
-            key: value for key, value in kwargs.items() if key in argspec.args
-        }
+        argspec = inspect.getfullargspec(shell_str.callable)
+        filtered_args: Any = kwargs
+        if not argspec.varkw:
+            filtered_args = {
+                key: value for key, value in kwargs.items() if key in argspec.args
+            }
 
-    return formatter_decorator.__format(self, fn(**filtered_args), **kwargs)
+        return self._format(
+            instance, shell_str.callable(**filtered_args), *args, **kwargs
+        )
+
+    def __get__(self, instance, owner):
+        return MethodType(self, instance) if instance else self
 
 
 def shellify(decorated: Callable):
     from snakemake.utils import SequenceFormatter
 
     # overwrite default snakemake string formatter to one that supports function evaluation
-    if SequenceFormatter.format is not formatter_decorator:
-        formatter_decorator.__format = SequenceFormatter.format
-
-        SequenceFormatter.format = formatter_decorator
+    if not isinstance(SequenceFormatter.format, ShellStringFormatter):
+        SequenceFormatter.format = ShellStringFormatter(SequenceFormatter.format)
 
     @wraps(decorated)
     def decorator():
-        return ShellString({}, decorated)
+        return ShellString(decorated)
 
     return decorator

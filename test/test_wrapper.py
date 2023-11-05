@@ -1,4 +1,5 @@
 from typing import Any, Callable, Dict
+
 import snakemake
 
 
@@ -22,21 +23,19 @@ def test_default():
     logger = SnakemakeLogger()
 
     if int(snakemake.__version__[0]) >= 5:
-        assert snakemake.snakemake(
-            snakefile="test/simple.smk",
-            dryrun=True,
-            printshellcmds=True,
-            log_handler=[logger.log_handler],
-        )
+        log_handler = [logger.log_handler]
     else:
-        assert snakemake.snakemake(
-            snakefile="test/simple.smk",
-            dryrun=True,
-            printshellcmds=True,
-            log_handler=logger.log_handler,
-        )
+        log_handler = logger.log_handler
+
+    assert snakemake.snakemake(
+        snakefile="test/simple.smk",
+        dryrun=True,
+        printshellcmds=True,
+        log_handler=log_handler,
+    )
 
     assert sorted(logger.lines) == [
         "echo 'hello borld' > b.txt",
+        "echo 'hello corld' > c.txt",
         "echo 'hello world' > a.txt",
     ]

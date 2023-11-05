@@ -10,7 +10,7 @@ def get_rule(output):
 
 
 rule all:
-    input: "a.txt", "b.txt"
+    input: "a.txt", "b.txt", "c.txt"
 
 rule get_a:
     output: "a.txt"
@@ -19,3 +19,6 @@ rule get_a:
 rule get_b:
     output: "b.txt"
     shell: get_rule()
+rule get_c:
+    output: "c.txt"
+    shell: "echo 'hello corld' > {output}"
