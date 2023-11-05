@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict
+from typing import Any
 
 import snakemake
 
@@ -7,25 +7,19 @@ class SnakemakeLogger:
     def __init__(self) -> None:
         self.lines = []
 
-    @property
-    def log_handler(self) -> Callable[[Dict[str, Any]], None]:
-        """Returns a log handler for use with snakemake."""
-
-        def fn(d: Dict[str, Any]) -> None:
-            if d["level"] != "shellcmd":
-                return
-            self.lines.append(d["msg"])
-
-        return fn
+    def __call__(self, d: dict[str, Any]) -> Any:
+        if d["level"] != "shellcmd":
+            return
+        self.lines.append(d["msg"])
 
 
 def test_default():
     logger = SnakemakeLogger()
 
-    if int(snakemake.__version__[0]) >= 5:
-        log_handler = [logger.log_handler]
-    else:
-        log_handler = logger.log_handler
+    log_handler = [logger]
+
+    if int(snakemake.__version__[0]) < 5:
+        log_handler = logger
 
     assert snakemake.snakemake(
         snakefile="test/simple.smk",
