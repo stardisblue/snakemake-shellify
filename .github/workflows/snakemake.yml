@@ -10,27 +10,30 @@ jobs:
       matrix:
         include:
           - python_version: "3.6"
-            snakemake_version: "4"
+            snakemake_version: "snakemake=4"
           - python_version: "3.10"
-            snakemake_version: "5"
+            snakemake_version: "snakemake-minimal=5"
+          - python_version: "3.10"
+            snakemake_version: "snakemake-minimal=6"
           - python_version: "3.11"
-            snakemake_version: "6"
-          - python_version: "3.11"
-            snakemake_version: "7"
+            snakemake_version: "snakemake-minimal=7"
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python_version }}
-        uses: actions/setup-python@v3
+      - uses: actions/checkout@v4
+      - uses: mamba-org/setup-micromamba@v1
         with:
-          python-version: ${{ matrix.python_version }}
-      - name: Add conda to system path
-        run: |
-          # $CONDA is an environment variable pointing to the root of the miniconda directory
-          echo $CONDA/bin >> $GITHUB_PATH
+          environment-name: python
+          create-args: >-
+            python=${{matrix.python_version}}
+            ${{ matrix.snakemake_version }}
+          cache-environment: true
+          condarc: |
+            channels:
+              - bioconda
+              - conda-forge
       - name: Install dependencies
+        shell: bash -el {0}
         run: |
           pip install .
-          mamba install -c conda-forge -c bioconda snakemake=${{ matrix.snakemake_version }}
       # - name: Lint with flake8
       #   run: |
       #     conda install flake8
@@ -39,6 +42,7 @@ jobs:
       #     # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
       #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
+        shell: bash -el {0}
         run: |
-          mamba install pytest
+          conda install pytest
           pytest --doctest-modules
