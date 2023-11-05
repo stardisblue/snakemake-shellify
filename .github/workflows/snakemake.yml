@@ -30,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install .
-          conda install -c conda-forge -c bioconda snakemake=${{ matrix.snakemake_version }}
+          mamba install -c conda-forge -c bioconda snakemake=${{ matrix.snakemake_version }}
       # - name: Lint with flake8
       #   run: |
       #     conda install flake8
@@ -40,5 +40,5 @@ jobs:
       #     flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
       - name: Test with pytest
         run: |
-          conda install pytest
+          mamba install pytest
           pytest --doctest-modules
